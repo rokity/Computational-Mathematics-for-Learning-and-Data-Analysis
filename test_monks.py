@@ -8,15 +8,15 @@ from kernel_initialization import *
 set_style_plot()
 
 DIR_DATA = "./data/"
-TR_FILE = 'monks-3.train'
-TS_FILE = 'monks-3.test'
+TR_FILE = 'monks-1.train'
+TS_FILE = 'monks-1.test'
 
 
 path_tr = DIR_DATA + TR_FILE
 path_ts = DIR_DATA + TS_FILE
-path_loss = 'out/err_monk3nr.png'
-path_acc = 'out/acc_monk3nr.png'
-path_result_model = 'out/results_nr.csv'
+path_loss = 'out/err_monk1nr.png'
+path_acc = 'out/acc_monk1nr.png'
+path_result_model = 'out/results_1_nr.csv'
 
 dim_in = 6
 one_hot = 17
@@ -36,8 +36,8 @@ dim_hid = 4
 
 model = NeuralNetwork('mse', 'accuracy')
 
-model.add_layer(dim_hid, input_dim=dim_in, activation='relu', kernel_initialization=RandomUniformInitialization(-0.5, 0.5))
-model.add_layer(dim_out, activation='sigmoid', kernel_initialization=RandomUniformInitialization(-0.5, 0.5))
+model.add_layer(dim_hid, input_dim=dim_in, activation='tanh', kernel_initialization=RandomUniformInitialization(-0.5, 0.5))
+model.add_layer(dim_out, activation='tanh', kernel_initialization=RandomUniformInitialization(-0.5, 0.5))
 
 model.compile()
 model.fit(
