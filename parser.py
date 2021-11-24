@@ -1,21 +1,20 @@
 import numpy as np
 
-
+#   This class is used to parse the data from the Monk's dataset
 class Monks_parser:
+    
     def __init__(self, path_tr, path_ts):
         self.path_tr = path_tr
         self.path_ts = path_ts
-
+        
+    #   This function is used to parse the training data
+    #   @param dim_features: number of features
+    #   @param dim_out: number of labels
+    #   @param one_hot: one hot encoding
+    #   @param shuffle: True if you want shuffle data,
+    #                   False otherwise
+    #   @return: (X_train, Y_train, X_test, Y_test)
     def parse(self, dim_features, dim_out, one_hot=None, shuffle=False):
-        """
-
-        @param dim_features: number of features
-        @param dim_out: number of labels
-        @param one_hot: one hot encoding
-        @param shuffle: True if you want shuffle data,
-                        False otherwise
-        @return: (X_train, Y_train, X_test, Y_test)
-        """
         dataset_train = self.__parse_file(self.path_tr, dim_features, dim_out, one_hot, shuffle)
         n_samples_train = dataset_train.shape[0]
         dataset_test = self.__parse_file(self.path_ts, dim_features, dim_out, one_hot, shuffle)
@@ -29,17 +28,18 @@ class Monks_parser:
         Y_test = dataset_test[:, 0].reshape((n_samples_test, dim_out))
         return X_train, Y_train, X_test, Y_test
 
+    #   This function is used to parse the file
+    #   Shuffle with numpy.random.shuffle
+    #   @param path: path of the file containing the dataset
+    #   @param dim_features: number of features
+    #   @param dim_out: number of labels
+    #   @param one_hot: one hot encoding
+    #   @param shuffle: True if you want shuffle data,
+    #                   False otherwise
+    #   @return: dataset
+    ###
     def __parse_file(self, path, dim_features, dim_out, one_hot, shuffle):
-        """
-
-        @param path: path of the file containing the dataset
-        @param dim_features: number of features
-        @param dim_out: number of labels
-        @param one_hot: one hot encoding
-        @param shuffle: True if you want shuffle data,
-                        False otherwise
-        @return: dataset
-        """
+        
         with open(path, 'r') as file:
             lines = file.readlines()
             if one_hot is not None:
@@ -64,47 +64,5 @@ class Monks_parser:
         if shuffle:
             np.random.shuffle(data)
         return data
-
-
-class Cup_parser:
-    def __init__(self, path):
-        self.path = path
-
-    def parse(self, dim_features, dim_out, shuffle=False):
-        """
-
-        @param dim_features: number of features
-        @param dim_out: number of labels
-        @param shuffle: True if you want shuffle data,
-                        False otherwise
-        @return: (samples, targets)
-        """
-        samples, targets = self.__parse_file(self.path, dim_features, dim_out, shuffle)
-        return samples, targets
-
-    def __parse_file(self, path, dim_features, dim_out, shuffle):
-        """
-
-        @param path: path of the file containing the dataset
-        @param dim_features: number of features
-        @param dim_out: number of labels
-        @param shuffle: True if you want shuffle data,
-                        False otherwise
-        @return: (samples, targets)
-        """
-        with open(path, 'r') as file:
-            lines = file.readlines()
-            data = np.zeros((len(lines)-7, dim_features + dim_out))
-            i = 0
-            for line in lines[7:]:
-                line = line.strip().split(',')
-                data[i] = line[1:]
-                i += 1
-            file.close()
-        if shuffle:
-            np.random.shuffle(data)
-        X = data[:, :dim_features]
-        Y = data[:, dim_features:dim_features+dim_out]
-        return X, Y
 
 
