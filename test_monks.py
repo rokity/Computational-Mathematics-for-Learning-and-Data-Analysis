@@ -23,7 +23,7 @@ one_hot = 17
 dim_out = 1
 
 parser = Monks_parser(path_tr, path_ts)
-
+#Parse Training and Test data from files, with One Hot Encoding
 X_train, Y_train, X_test, Y_test = parser.parse(dim_in, dim_out, one_hot)
 
 #Y_train = change_output_value(Y_train, 0, -1)
