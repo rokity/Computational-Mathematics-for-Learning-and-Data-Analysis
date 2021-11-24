@@ -4,64 +4,55 @@ from kernel_initialization import *
 import matplotlib.pyplot as plt
 from optimizers import *
 
+# This class is used to create a neural network
+
 
 class NeuralNetwork:
-
+    # Constructor
+    # You can find the list of loss functions and metrics in the functions_factory.py file
+    #   @param loss: string that represents the loss function to use
+    #   @param metric: string that represents the metric to use to evaluate the model
+    #
     def __init__(self, loss, metric):
-        """
 
-        @param loss: string that represents the loss function to use
-                     or instance of Function class (@see functions_factory)
-        @param metric: string that represents the metric to use
-                       or instance of Function class (@see functions_factory)
-        """
         self.layers = []
-        if isinstance(loss, str):
-            self.loss = FunctionsFactory.build(loss)
-        else:
-            self.loss = loss
-        if isinstance(metric, str):
-            self.metric = FunctionsFactory.build(metric)
-        else:
-            self.metric = metric
+        self.loss = FunctionsFactory.build(loss)
+        self.metric = FunctionsFactory.build(metric)
         self.n_layers = 0
         self.history = dict()
 
+    # This method is used to initialize the optimizer and compile layers(watch layer class)
+    #    @param optimizer: optimizer used (@see optimizers.py)
+    #
     def compile(self, optimizer=SGD()):
-        """
 
-        @param optimizer: optimizer used (@see optimizers.py)
-
-        It initializes the optimizer
-        """
         self.optimizer = optimizer
         for i in range(len(self.layers)):
             self.layers[i].compile()
         self.optimizer.initialize(self.layers)
 
+    # This method is used to add a layer to the neural network
+    #   @param dim_out: dimension of the output
+    #   @param input_dim: dimension of the input
+    #   @param activation: string that represents the activation function to use on this layer
+    #   @param kernel_initialization: string that represents weights initialization algorithm
+    #
     def add_layer(self, dim_out, input_dim=None, activation='linear', kernel_initialization=RandomUniformInitialization()):
-        """
-
-        @param dim_out: dimension of the output
-        @param input_dim: dimension of the input
-        @param activation: string that represents the activation function
-        @param kernel_initialization: weights initialization
-        @return:
-        """
         f_act = FunctionsFactory.build(activation)
         if input_dim is not None:
-            layer = Layer(input_dim, dim_out, f_act, self.loss, kernel_initialization, "Dense_" + str(self.n_layers))
+            layer = Layer(input_dim, dim_out, f_act, self.loss,
+                          kernel_initialization, "Dense_" + str(self.n_layers))
         else:
-            layer = Layer(self.layers[-1].dim_out, dim_out, f_act, self.loss, kernel_initialization, "Dense_" + str(self.n_layers))
+            layer = Layer(self.layers[-1].dim_out, dim_out, f_act, self.loss,
+                          kernel_initialization, "Dense_" + str(self.n_layers))
         self.n_layers += 1
         self.layers.append(layer)
 
+    # Predict function with evalute the output of the model
+    #   @param X: input features
+    #   @return: output predictions
+    #
     def predict(self, X: np.ndarray):
-        """
-
-        @param X: input samples
-        @return: output predictions
-        """
         out = np.zeros((X.shape[0], self.layers[-1].dim_out))
         n_samples = X.shape[0]
         for i in range(n_samples):
@@ -69,13 +60,11 @@ class NeuralNetwork:
             out[i] = self.__feedforward(x).reshape(1, self.layers[-1].dim_out)
         return out
 
+    # Predict and Evalute the output of the model
+    #   @param X: input features
+    #   @param Y: output targets
+    #   @return: loss and metric 
     def evaluate(self, X: np.ndarray, Y: np.ndarray):
-        """
-
-        @param X: input samples
-        @param Y: output targets
-        @return: loss and metric value
-        """
         err = 0
         metric = 0
         n_samples = X.shape[0]
@@ -176,7 +165,8 @@ class NeuralNetwork:
                     curr_i = (curr_i + 1) % n_samples
 
                 tr_loss_batch[nb] = loc_err / batch_size
-                tr_lossr_batch[nb] = tr_loss_batch[nb] + self.optimizer.get_regualarization_for_loss(self.layers)
+                tr_lossr_batch[nb] = tr_loss_batch[nb] + \
+                    self.optimizer.get_regualarization_for_loss(self.layers)
                 tr_metric_batch[nb] = loc_metric / batch_size
 
                 self._update_parameters(batch_size)
@@ -211,11 +201,12 @@ class NeuralNetwork:
                         curr_epoch,
                         tr_err_pen,
                         tr_err,
-                        ),
+                    ),
                     end=''
                 )
                 if vl is not None:
-                    print("\t vl_err: {:.6f}".format(self.history["val_" + self.loss.name][-1]))
+                    print("\t vl_err: {:.6f}".format(
+                        self.history["val_" + self.loss.name][-1]))
                 else:
                     print()
 
@@ -235,23 +226,32 @@ class NeuralNetwork:
             print()
             print("Exit at epoch: {}".format(curr_epoch))
 
-            print("{} training set: {:.6f}".format(self.loss.name, self.history[self.loss.name][-1]))
+            print("{} training set: {:.6f}".format(
+                self.loss.name, self.history[self.loss.name][-1]))
             if vl is not None:
-                print("{} validation set: {:.6f}".format(self.loss.name, self.history["val_" + self.loss.name][-1]))
+                print("{} validation set: {:.6f}".format(
+                    self.loss.name, self.history["val_" + self.loss.name][-1]))
             if ts is not None:
-                print("{} test set: {:.6f}".format(self.loss.name, self.history["test_" + self.loss.name][-1]))
+                print("{} test set: {:.6f}".format(self.loss.name,
+                                                   self.history["test_" + self.loss.name][-1]))
             if self.metric.name == 'accuracy':
-                print("% accuracy training set: {}".format(self.history[self.metric.name][-1] * 100))
+                print("% accuracy training set: {}".format(
+                    self.history[self.metric.name][-1] * 100))
                 if vl is not None:
-                    print("% accuracy validation set: {}".format(self.history["val_" + self.metric.name][-1] * 100))
+                    print("% accuracy validation set: {}".format(
+                        self.history["val_" + self.metric.name][-1] * 100))
                 if ts is not None:
-                    print("% accuracy test set: {}".format(self.history["test_" + self.metric.name][-1] * 100))
+                    print("% accuracy test set: {}".format(
+                        self.history["test_" + self.metric.name][-1] * 100))
             else:
-                print("{} training set: {:.6f}".format(self.metric.name, self.history[self.metric.name][-1]))
+                print("{} training set: {:.6f}".format(
+                    self.metric.name, self.history[self.metric.name][-1]))
                 if vl is not None:
-                    print("{} validation set: {:.6f}".format(self.metric.name, self.history["val_" + self.metric.name][-1]))
+                    print("{} validation set: {:.6f}".format(
+                        self.metric.name, self.history["val_" + self.metric.name][-1]))
                 if ts is not None:
-                    print("{} test set: {:.6f}".format(self.metric.name, self.history["test_" + self.metric.name][-1]))
+                    print("{} test set: {:.6f}".format(self.metric.name,
+                                                       self.history["test_" + self.metric.name][-1]))
 
         return self.history
 
@@ -279,11 +279,14 @@ class NeuralNetwork:
         epochs = self.history['epochs']
         plt.xlabel('epochs', fontsize=15)
         plt.ylabel(self.loss.name, fontsize=15)
-        plt.plot(epochs, self.history[self.loss.name], color='tab:orange', linestyle='-', label="Training")
+        plt.plot(epochs, self.history[self.loss.name],
+                 color='tab:orange', linestyle='-', label="Training")
         if val:
-            plt.plot(epochs, self.history["val_" + self.loss.name], color='tab:green', linestyle='--', label="Validation")
+            plt.plot(epochs, self.history["val_" + self.loss.name],
+                     color='tab:green', linestyle='--', label="Validation")
         if test:
-            plt.plot(epochs, self.history["test_" + self.loss.name], color='tab:blue', linestyle='-.', label="Test")
+            plt.plot(epochs, self.history["test_" + self.loss.name],
+                     color='tab:blue', linestyle='-.', label="Test")
         plt.legend(fontsize=20)
         if path is not None:
             plt.draw()
@@ -306,11 +309,14 @@ class NeuralNetwork:
         epochs = self.history['epochs']
         plt.xlabel('epochs', fontsize=15)
         plt.ylabel(self.metric.name, fontsize=15)
-        plt.plot(epochs, self.history[self.metric.name], color='tab:orange', linestyle='-', label="Training")
+        plt.plot(epochs, self.history[self.metric.name],
+                 color='tab:orange', linestyle='-', label="Training")
         if val:
-            plt.plot(epochs, self.history["val_" + self.metric.name], color='tab:green', linestyle='--', label="Validation")
+            plt.plot(epochs, self.history["val_" + self.metric.name],
+                     color='tab:green', linestyle='--', label="Validation")
         if test:
-            plt.plot(epochs, self.history["test_" + self.metric.name], color='tab:blue', linestyle='-.', label="Test")
+            plt.plot(epochs, self.history["test_" + self.metric.name],
+                     color='tab:blue', linestyle='-.', label="Test")
         plt.legend(fontsize=20)
         if path is not None:
             plt.draw()
