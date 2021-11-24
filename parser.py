@@ -30,6 +30,7 @@ class Monks_parser:
 
     #   This function is used to parse the file
     #   Shuffle with numpy.random.shuffle
+    #   In this function I implemented the one hot encoding
     #   @param path: path of the file containing the dataset
     #   @param dim_features: number of features
     #   @param dim_out: number of labels
@@ -52,6 +53,7 @@ class Monks_parser:
                 if one_hot is None:
                     data[i] = np.array(line[0:dim_features + dim_out])
                 else:
+                    #   !!one hot encoding implementation!!
                     data[i, 0:dim_out] = line[0:dim_out]
                     data[i, int(line[1])] = 1
                     data[i, int(line[2]) + 3] = 1
