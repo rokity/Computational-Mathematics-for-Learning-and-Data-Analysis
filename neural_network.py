@@ -48,7 +48,7 @@ class NeuralNetwork:
         self.n_layers += 1
         self.layers.append(layer)
 
-    # Predict function with evalute the output of the model
+    # Predict function without evalute the output of the model
     #   @param X: input features
     #   @return: output predictions
     #
@@ -60,7 +60,7 @@ class NeuralNetwork:
             out[i] = self.__feedforward(x).reshape(1, self.layers[-1].dim_out)
         return out
 
-    # Predict and Evalute the output of the model
+    # Predict and Evalute the output of the model using labels/targets
     #   @param X: input features
     #   @param Y: output targets
     #   @return: loss and metric 
@@ -76,26 +76,21 @@ class NeuralNetwork:
             metric += float(self.metric.compute_fun(d.T, y))
         return err / n_samples, metric / n_samples
 
+    # Call Feedforward function on each layer
+    #   @param x: input features
+    #   @return: output prediction
     def __feedforward(self, x: np.ndarray):
-        """
-
-        @param x: input sample
-        @return: output prediction
-        """
         x = x.reshape((x.shape[1], x.shape[0]))
         for layer in self.layers:
             x = layer.feedforward(x)
         return x
 
+    # Execute Backpropagation using optimizer algorithm
+    #   @param d: targets/labels real output    
     def _backpropagation(self, d):
-        """
-
-        @param d: real output
-
-        execute backpropagation algorithm
-        """
         self.optimizer.compute_gradients(d, self.layers)
 
+    
     def _update_parameters(self, batch_size):
         """
 
