@@ -90,14 +90,11 @@ class NeuralNetwork:
     def _backpropagation(self, d):
         self.optimizer.compute_gradients(d, self.layers)
 
-    
-    def _update_parameters(self, batch_size):
-        """
-
-        update the parameters of the model
-        """
+    # Update weights and biases of each layer using optmizer 
+    #   @param batch_size: size of the batch
+    def _update_parameters(self, batch_size):        
         self.optimizer.update_parameters(self.layers, batch_size)
-
+    
     def fit(self, X_train, Y_train, epochs, batch_size=32, vl=None, ts=None, tol=None, shuffle=False, early_stopping=None, verbose=False):
         """
 
