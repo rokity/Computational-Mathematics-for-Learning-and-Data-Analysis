@@ -100,13 +100,10 @@ class SGD:
             layer.w -= self.l2 * layer.w
         self.initialize(layers)
 
+    # Update learning rate
+    #  @param curr_epoch: current epoch
+    #
     def update_hyperparameters(self, curr_epoch):
-        """
-
-        @param curr_epoch: current epoch
-
-        If you use a linear learning rate decay strategy, it is used to update the learning rate hyperparameter
-        """
         if self.decay_lr is not None:
             if curr_epoch < self.decay_lr["epoch_tau"]:
                 alpha = curr_epoch / self.decay_lr["epoch_tau"]
