@@ -1,18 +1,19 @@
 import numpy as np
 from kernel_initialization import *
 
+# Layer class
+# COMPUTATION OF FEEDFORWARD
 
 class Layer:
-    def __init__(self, dim_in, dim_out, f_act, loss, kernel_initialization, name):
-        """
 
-        @param dim_in: input dimension
-        @param dim_out: output dimension
-        @param f_act: activation function
-        @param loss: loss fucntion
-        @param kernel_initialization: weights initialization
-        @param name: layer name
-        """
+    # Contructor
+    # @param dim_in: input dimension
+    # @param dim_out: output dimension
+    # @param f_act: activation function
+    # @param loss: loss fucntion
+    # @param kernel_initialization: weights initialization
+    # @param name: layer name (NOT IMPORTANT)
+    def __init__(self, dim_in, dim_out, f_act, loss, kernel_initialization, name):
         self.dim_in = dim_in
         self.dim_out = dim_out
         self.f_act = f_act
@@ -20,40 +21,30 @@ class Layer:
         self.name = name
         self.kernel_initialization = kernel_initialization
 
+    # Compile Layer
     def compile(self):
-        """
-
-        initialize the layer
-        """
         self.__init_layer(self.kernel_initialization)
 
+    # Initialize layer
+    # @param kernel_initialization: weights initialization
+    # @return: None
     def __init_layer(self, kernel_initialization):
-        """
-
-        @param kernel_initialization: weights initialization
-
-        initialize the layer
-        """
         self.w = kernel_initialization.initialize(self.dim_out, self.dim_in)
-        self.b = np.zeros((self.dim_out, 1))
+        self.b = np.zeros((self.dim_out, 1)) #w0
         self.cache = None
 
+    # Forward propagation
+    # @param x: input sample
+    # @return: output prediction
+    #
     def feedforward(self, x):
-        """
-
-        @param x: input sample
-        @return: output prediction
-        """
         v = np.dot(self.w, x) + self.b
         y = self.f_act.compute_fun(v)
         self.cache = (x, v, y)
         return y
 
+    # Print Info Layer
     def print_info(self):
-        """
-
-        prints layer information
-        """
         print('name: {}\n'
               'input size: {}\n'
               'output size: {}\n'
