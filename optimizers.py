@@ -65,12 +65,11 @@ class SGD:
             self.params["db_" + layer.name] += partial #derivation of bias matrix (w0)
             loc_grad = np.dot(layer.w.T, partial) #dw output layer
 
+    # Calculate Regularization for loss function (NOT UPDATES PARAMETERS)
+    #   @param layers: list of layers
+    #   @return: 1/2 * lambda * || w ||^2
+    #
     def get_regualarization_for_loss(self, layers):
-        """
-
-        @param layers: list of layers
-        @return: 1/2 * :lambda: * || w ||^2
-        """
         sum_w = 0
         for layer in layers:
             w = layer.w
