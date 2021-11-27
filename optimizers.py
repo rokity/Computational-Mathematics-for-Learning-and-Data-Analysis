@@ -30,13 +30,6 @@ class SGD:
     # @param layers: list of layers
     # 
     def initialize(self, layers):
-        """
-
-        @param layers: list of layers
-
-        Initialize the optimizer
-        """
-
         for layer in layers:
             name = layer.name
             self.params["dw_" + name] = np.zeros(layer.w.shape) #derivation of weight matrix
@@ -76,6 +69,10 @@ class SGD:
             sum_w += np.sum(w*w)
         return 0.5 * sum_w * self.l2
 
+    # Update Weights and Biases for each layer
+    #   @param layers: list of layers
+    #   @param batch_size: size of the batch
+    #
     def update_parameters(self, layers, batch_size):
         """
 
