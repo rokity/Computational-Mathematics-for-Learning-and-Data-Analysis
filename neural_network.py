@@ -5,8 +5,10 @@ import matplotlib.pyplot as plt
 from optimizers import *
 
 # This class is used to create a neural network
-
-
+# Train the model with training ,test and validation dataset
+# BATCH & EPOCHS MANAGEMENT
+# There aren't loss or backpropagation formulas (NO FORMULAS)
+# Plot Functions implemented for Loss and Accuracy
 class NeuralNetwork:
     # Constructor
     # You can find the list of loss functions and metrics in the functions_factory.py file
@@ -64,7 +66,7 @@ class NeuralNetwork:
     # Predict and Evalute the output of the model using labels/targets
     #   @param X: input features
     #   @param Y: output targets
-    #   @return: loss and metric 
+    #   @return: loss and metric
     def evaluate(self, X: np.ndarray, Y: np.ndarray):
         err = 0
         metric = 0
@@ -87,33 +89,30 @@ class NeuralNetwork:
         return x
 
     # Execute Backpropagation using optimizer algorithm
-    #   @param d: targets/labels real output    
+    #   @param d: targets/labels real output
     def _backpropagation(self, d):
         self.optimizer.compute_gradients(d, self.layers)
 
-    # Update weights and biases of each layer using optmizer 
+    # Update weights and biases of each layer using optmizer
     #   @param batch_size: size of the batch
-    def _update_parameters(self, batch_size):        
+    def _update_parameters(self, batch_size):
         self.optimizer.update_parameters(self.layers, batch_size)
-    
+
+    # Train the model using the training data and labels
+    #    @param X_train: training samples
+    #    @param Y_train: training labels
+    #    @param epochs: epochs number
+    #    @param batch_size: size of the batch
+    #    @param vl: pair (validation samples, validation targets)
+    #    @param ts: pair (test samples, test targets) (used only for plot)
+    #    @param tol: tolerance on the training set, if null => It uses an early stopping method
+    #    @param shuffle: True if you want shuffle training data (at each epoch), False otherwise
+    #    @param early_stopping: early stopping method
+    #    @param verbose: used to print some informations
+    #    @return: history
+    #
     def fit(self, X_train, Y_train, epochs, batch_size=32, vl=None, ts=None, tol=None, shuffle=False, early_stopping=None, verbose=False):
-        """
-
-        @param X_train: training samples
-        @param Y_train: training targets
-        @param epochs: epochs number
-        @param batch_size: size of the batch
-        @param vl: pair (validation samples, validation targets)
-        @param ts: pair (test samples, test targets) (used only for plot)
-        @param tol: tolerance on the training set
-                    if null => It uses an early stopping method
-        @param shuffle: True if you want shuffle training data (at each epoch),
-                        False otherwise
-        @param early_stopping: early stopping method
-        @param verbose: used to print some informations
-        @return: history
-        """
-
+        #History rappresents loss and accuracy for each epoch
         self.history[self.loss.name] = []
         self.history[self.metric.name] = []
 
@@ -127,18 +126,19 @@ class NeuralNetwork:
             self.history["test_" + self.loss.name] = []
             self.history["test_" + self.metric.name] = []
 
+        #Size of training set
         n_samples = X_train.shape[0]
         curr_epoch = 0
-        curr_i = 0
+        curr_i = 0  # Index of the current sample
 
+        #Calculate the number of batches
         n_batch = int(n_samples / batch_size)
         tr_loss_batch = np.zeros(n_batch)
         tr_lossr_batch = np.zeros(n_batch)
         tr_metric_batch = np.zeros(n_batch)
-        end = False
+        end = False  # Used to stop the training
 
         while curr_epoch < epochs and not end:
-
             if shuffle:
                 idx = np.random.permutation(n_samples)
                 X_train = X_train[idx]
@@ -159,14 +159,14 @@ class NeuralNetwork:
 
                 tr_loss_batch[nb] = loc_err / batch_size
                 tr_lossr_batch[nb] = tr_loss_batch[nb] + \
-                    self.optimizer.get_regualarization_for_loss(self.layers)
-                tr_metric_batch[nb] = loc_metric / batch_size
+                    self.optimizer.get_regualarization_for_loss(
+                        self.layers)  # Loss with Regularization
+                tr_metric_batch[nb] = loc_metric / batch_size  # Accuracy
 
                 self._update_parameters(batch_size)
             self.optimizer.update_hyperparameters(curr_epoch)
 
             # compute average loss/metric in training set
-
             tr_err = np.mean(tr_loss_batch)
             tr_metric = np.mean(tr_metric_batch)
             tr_err_pen = np.mean(tr_lossr_batch)
@@ -187,21 +187,7 @@ class NeuralNetwork:
                 self.history["test_" + self.metric.name].append(ts_metric)
 
             if verbose:
-                print(
-                    "It {:6d}: tr_err (with penality term): {:.6f},"
-                    "\t tr_err (without penality term): {:.6f}"
-                    .format(
-                        curr_epoch,
-                        tr_err_pen,
-                        tr_err,
-                    ),
-                    end=''
-                )
-                if vl is not None:
-                    print("\t vl_err: {:.6f}".format(
-                        self.history["val_" + self.loss.name][-1]))
-                else:
-                    print()
+                self.print_epoch_verbose(curr_epoch, tr_err, tr_err, vl)
 
             curr_epoch += 1
 
@@ -214,61 +200,18 @@ class NeuralNetwork:
                     end = True
 
         self.history["epochs"] = list(range(curr_epoch))
-
         if verbose:
-            print()
-            print("Exit at epoch: {}".format(curr_epoch))
-
-            print("{} training set: {:.6f}".format(
-                self.loss.name, self.history[self.loss.name][-1]))
-            if vl is not None:
-                print("{} validation set: {:.6f}".format(
-                    self.loss.name, self.history["val_" + self.loss.name][-1]))
-            if ts is not None:
-                print("{} test set: {:.6f}".format(self.loss.name,
-                                                   self.history["test_" + self.loss.name][-1]))
-            if self.metric.name == 'accuracy':
-                print("% accuracy training set: {}".format(
-                    self.history[self.metric.name][-1] * 100))
-                if vl is not None:
-                    print("% accuracy validation set: {}".format(
-                        self.history["val_" + self.metric.name][-1] * 100))
-                if ts is not None:
-                    print("% accuracy test set: {}".format(
-                        self.history["test_" + self.metric.name][-1] * 100))
-            else:
-                print("{} training set: {:.6f}".format(
-                    self.metric.name, self.history[self.metric.name][-1]))
-                if vl is not None:
-                    print("{} validation set: {:.6f}".format(
-                        self.metric.name, self.history["val_" + self.metric.name][-1]))
-                if ts is not None:
-                    print("{} test set: {:.6f}".format(self.metric.name,
-                                                       self.history["test_" + self.metric.name][-1]))
+            self.print_final_results_model(curr_epoch, vl, ts)
 
         return self.history
 
-    def sum_square_weights(self):
-        """
-
-        @return: sum(w^2) for each layer
-        """
-        sum = 0
-        for layer in self.layers:
-            sum += np.sum(np.square(layer.w))
-        return sum
-
+    #   Plot metric of loss ,save images and show if you want
+    #   @param val: True if you want plot the validation loss, False otherwise
+    #   @param test: True if you want plot the test loss, False otherwise
+    #   @param show: True if you want show the plots, False otherwise
+    #   @param path: path of file where to save the plots
+    #
     def plot_loss(self, val=False, test=False, show=True, path=None):
-        """
-
-        @param val: True if you want plot the validation loss
-                    False otherwise
-        @param test: True if you want plot the test loss
-                     False otherwise
-        @param show: True if you want show the plots
-                     False otherwise
-        @param path: path of file where to save the plots
-        """
         epochs = self.history['epochs']
         plt.xlabel('epochs', fontsize=15)
         plt.ylabel(self.loss.name, fontsize=15)
@@ -288,17 +231,13 @@ class NeuralNetwork:
             plt.show()
         plt.close()
 
+    #   Plot metric of accuracy ,save images and show if you want
+    #   @param val: True if you want plot the validation metric, False otherwise
+    #   @param test: True if you want plot the test metric, False otherwise
+    #   @param show: True if you want show the plots, False otherwise
+    #   @param path: path of file where to save the plots
+    #
     def plot_metric(self, val=False, test=False, show=True, path=None):
-        """
-
-        @param val: True if you want plot the validation metric
-                    False otherwise
-        @param test: True if you want plot the test metric
-                     False otherwise
-        @param show: True if you want show the plots
-                     False otherwise
-        @param path: path of file where to save the plots
-        """
         epochs = self.history['epochs']
         plt.xlabel('epochs', fontsize=15)
         plt.ylabel(self.metric.name, fontsize=15)
@@ -317,3 +256,61 @@ class NeuralNetwork:
         if show:
             plt.show()
         plt.close()
+
+    # Print Status of model during an epoch
+    # @curr_epoch: current epoch
+    # @tr_err: training error
+    # @tr_err_pen: training error with penality
+    # @vl: validation set
+    #
+    def print_epoch_verbose(self, curr_epoch, tr_err_pen, tr_err, vl):
+        print("It {:6d}: tr_err (with penality term): {:.6f},"
+              "\t tr_err (without penality term): {:.6f}"
+              .format(
+                  curr_epoch,
+                  tr_err_pen,
+                  tr_err,
+              ),
+              end=''
+              )
+        if vl is not None:
+            print("\t vl_err: {:.6f}".format(
+                self.history["val_" + self.loss.name][-1]))
+        else:
+            print()
+
+    # Print Final Results of Training Model Phase
+    # @curr_epoch: Exit Epochs
+    # @vl: validation set
+    # @ts: test set
+    #
+    def print_final_results_model(self, curr_epoch, vl, ts):
+        print()
+        print("Exit at epoch: {}".format(curr_epoch))
+
+        print("{} training set: {:.6f}".format(
+            self.loss.name, self.history[self.loss.name][-1]))
+        if vl is not None:
+            print("{} validation set: {:.6f}".format(
+                self.loss.name, self.history["val_" + self.loss.name][-1]))
+        if ts is not None:
+            print("{} test set: {:.6f}".format(self.loss.name,
+                                               self.history["test_" + self.loss.name][-1]))
+        if self.metric.name == 'accuracy':
+            print("% accuracy training set: {}".format(
+                self.history[self.metric.name][-1] * 100))
+            if vl is not None:
+                print("% accuracy validation set: {}".format(
+                    self.history["val_" + self.metric.name][-1] * 100))
+            if ts is not None:
+                print("% accuracy test set: {}".format(
+                    self.history["test_" + self.metric.name][-1] * 100))
+        else:
+            print("{} training set: {:.6f}".format(
+                self.metric.name, self.history[self.metric.name][-1]))
+            if vl is not None:
+                print("{} validation set: {:.6f}".format(
+                    self.metric.name, self.history["val_" + self.metric.name][-1]))
+            if ts is not None:
+                print("{} test set: {:.6f}".format(self.metric.name,
+                                                   self.history["test_" + self.metric.name][-1]))
