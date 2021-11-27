@@ -9,6 +9,7 @@ from optimizers import *
 # BATCH & EPOCHS MANAGEMENT
 # There aren't loss or backpropagation formulas (NO FORMULAS)
 # Plot Functions implemented for Loss and Accuracy
+
 class NeuralNetwork:
     # Constructor
     # You can find the list of loss functions and metrics in the functions_factory.py file
