@@ -43,6 +43,7 @@ class NeuralNetwork:
             layer = Layer(input_dim, dim_out, f_act, self.loss,
                           kernel_initialization, "Dense_" + str(self.n_layers))
         else:
+            #Take the same topology of the previous layer
             layer = Layer(self.layers[-1].dim_out, dim_out, f_act, self.loss,
                           kernel_initialization, "Dense_" + str(self.n_layers))
         self.n_layers += 1
