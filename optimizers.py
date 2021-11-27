@@ -26,7 +26,7 @@ class SGD:
             }
         self.params = dict()
 
-    # Initialize matrix of derivations of weights and bias
+    # Initialize matrix of derivations of weights and bias,clear derivations of weights bias after update_parameters
     # @param layers: list of layers
     # 
     def initialize(self, layers):
@@ -35,11 +35,11 @@ class SGD:
             self.params["dw_" + name] = np.zeros(layer.w.shape) #derivation of weight matrix
             self.params["db_" + name] = np.zeros(layer.b.shape) #deriviation of bias matrix (w0)
             if not self.is_init:
-                self.params["vw_" + name] = np.zeros(layer.w.shape)
-                self.params["vb_" + name] = np.zeros(layer.b.shape)
+                self.params["vw_" + name] = np.zeros(layer.w.shape) #classical momentum weight
+                self.params["vb_" + name] = np.zeros(layer.b.shape) #classical momentum weight
             if self.nesterov and not self.is_init:
-                self.params["vb_prev_" + name] = np.zeros(layer.b.shape)
-                self.params["vw_prev_" + name] = np.zeros(layer.w.shape)
+                self.params["vb_prev_" + name] = np.zeros(layer.b.shape)  #nesterov momentum bias
+                self.params["vw_prev_" + name] = np.zeros(layer.w.shape)  #nesterov momentum weight
         self.is_init = True
 
     # Compute gradients for loss and activation
@@ -78,23 +78,24 @@ class SGD:
             dw = self.params["dw_" + layer.name] / batch_size
             db = self.params["db_" + layer.name] / batch_size
 
-            if self.nesterov:
+            if self.nesterov: # NOT Heavy Ball
                 self.params["vw_prev_" + layer.name] = self.params["vw_" + layer.name]
                 self.params["vb_prev_" + layer.name] = self.params["vb_" + layer.name]
 
+            # Classical Momentum Heavy Ball
             self.params["vw_" + layer.name] = \
                 self.momentum * self.params["vw_" + layer.name] - self.lr * dw
             self.params["vb_" + layer.name] = \
                 self.momentum * self.params["vb_" + layer.name] - self.lr * db
 
-            if self.nesterov:
+            if self.nesterov: # NOT Heavy Ball
                 layer.w += \
                     self.momentum * self.params["vw_prev_" + layer.name] + \
                     (1 - self.momentum) * self.params["vw_" + layer.name]
                 layer.b += \
                     self.momentum * self.params["vb_prev_" + layer.name] + \
                     (1 - self.momentum) * self.params["vb_" + layer.name]
-            else:
+            else: # Heavy Ball
                 layer.w += self.params["vw_" + layer.name]
                 layer.b += self.params["vb_" + layer.name]
             layer.w -= self.l2 * layer.w
