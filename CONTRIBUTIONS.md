@@ -22,6 +22,7 @@ If you need to alterate Plot Function, save Plot image, Print Verbose of trainin
 
 
 ### layer.py
-Initialize the layer, create weight matrix and w0 matrix (self.b). Implement Feedforward
+Initialize the layer, create weight matrix and w0 matrix (self.b). Implement Feedforward and call Activation Function.
+Print informationa about the layer. Save cache feedforward.
 
 
