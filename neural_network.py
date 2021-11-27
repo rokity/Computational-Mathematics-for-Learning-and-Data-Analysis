@@ -28,7 +28,6 @@ class NeuralNetwork:
     #    @param optimizer: optimizer used (@see optimizers.py)
     #
     def compile(self, optimizer=SGD()):
-
         self.optimizer = optimizer
         for i in range(len(self.layers)):
             self.layers[i].compile()
