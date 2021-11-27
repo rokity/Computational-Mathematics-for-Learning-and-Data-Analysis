@@ -7,7 +7,10 @@
 - Print Loss Accuracy ---> neural_network.py
 - Kernel Initalization ---> kernel_initialization.py
 - Feedforword formula ---> layer.py (feedforward function/method)
-- Activation function ---> 
+- Activation function ---> functionts_factory.py
+- Update Parameters ---> optimization.py (update_parameters heaby ball SGD, vw,vb)
+- Compute Gradients ---> optimization.py (compute_gradients heaby ball SGD dw,db)
+- Regularization of loss and update parameters ---> optimization.py (compute_gradients heaby ball SGD ,layer.w -= self.l2 * layer.w)
 
 ## File Description
 
@@ -24,5 +27,10 @@ If you need to alterate Plot Function, save Plot image, Print Verbose of trainin
 ### layer.py
 Initialize the layer, create weight matrix and w0 matrix (self.b). Implement Feedforward and call Activation Function.
 Print informationa about the layer. Save cache feedforward.
+
+
+### Optimization
+Implement strategies of for calculate gradients , updates weights and bias parameters and regularization loss formula.
+
 
 
