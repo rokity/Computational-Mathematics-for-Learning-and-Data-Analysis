@@ -74,13 +74,6 @@ class SGD:
     #   @param batch_size: size of the batch
     #
     def update_parameters(self, layers, batch_size):
-        """
-
-        @param layers: list of layers
-        @param batch_size: size of the batch
-
-        It updates the parameters of each layer
-        """
         for layer in layers:
             dw = self.params["dw_" + layer.name] / batch_size
             db = self.params["db_" + layer.name] / batch_size
